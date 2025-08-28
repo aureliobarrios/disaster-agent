@@ -1,0 +1,469 @@
+{
+  "name": "Disaster-Bot-Slack",
+  "nodes": [
+    {
+      "parameters": {
+        "trigger": [
+          "app_mention"
+        ],
+        "channelId": {
+          "__rl": true,
+          "value": "C09CCG5UY2W",
+          "mode": "list",
+          "cachedResultName": "ai-agent"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        -32
+      ],
+      "id": "68326d4b-4c83-49ad-b813-57e8f3304fee",
+      "name": "Slack Trigger",
+      "webhookId": "33eaaf59-d939-47d0-8e43-07ca8f40b17a",
+      "credentials": {
+        "slackApi": {
+          "id": "KkdgrpxSM5nUaUTc",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -576,
+        176
+      ],
+      "id": "702819e3-e17d-44e9-8d6a-18d24d059b9a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "BXR0IAaws3xJdRsj",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.user }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -432,
+        176
+      ],
+      "id": "350cfa79-113c-4c4d-b229-b293ce47ec7f",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "75248AnssvaAaGus",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "This tool returns the geolocation of a user based on the provided IP address.",
+        "workflowId": {
+          "__rl": true,
+          "value": "6HBzeyCWa82CVv2e",
+          "mode": "list",
+          "cachedResultName": "Geolocation-Tool"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ip": "137.25.20.200"
+          },
+          "matchingColumns": [
+            "ip"
+          ],
+          "schema": [
+            {
+              "id": "ip",
+              "displayName": "ip",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -304,
+        176
+      ],
+      "id": "daa0baf6-92c6-403d-a88a-0c12892c15a5",
+      "name": "Geolocation"
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to get disaster related information from relevant RSS feeds.",
+        "workflowId": {
+          "__rl": true,
+          "value": "MG8jIzhShaAVmYvm",
+          "mode": "list",
+          "cachedResultName": "Disaster-News-Tool"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        144
+      ],
+      "id": "a4c478ce-8257-4187-8e05-b48d456067a9",
+      "name": "Disaster RSS"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"state\": \"California\",\n\t\"city\":\"Los Angeles\",\n    \"response\": \"The response from the AI\"\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        64
+      ],
+      "id": "a8aed78c-ddae-4f19-aa94-ad384f42d4e1",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        224
+      ],
+      "id": "808c71b8-4a85-433e-a3a3-945e1fd370c1",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "BXR0IAaws3xJdRsj",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a helpful assistant who is an expert in Disaster Response and Recovery. When you receive a message, use the configured tools to get metadata from disaster-related RSS feeds and location data as context. Summarize the data retrieved from the tools and provide that as a response."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -384,
+        -80
+      ],
+      "id": "e18b7a70-b641-414a-9b54-4f285b77dcd2",
+      "name": "Disaster News Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Locale: {{ $json.output.city }}, {{ $json.output.state }}\nDisaster Notification Summary: {{ $json.output.response }}",
+        "options": {
+          "systemMessage": "You are a helpful assistant who is an expert in Disaster Response and Recovery. You will receive a disaster notification summary for the users current location. Summarize this content for the user and provide some additional steps the user can take."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        176,
+        -112
+      ],
+      "id": "092db86c-da87-46fa-8440-b2cce163853e",
+      "name": "Local News"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        112
+      ],
+      "id": "d2d7c948-81ca-499b-9c32-b7fc7caf8c82",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "BXR0IAaws3xJdRsj",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Slack Trigger').item.json.user }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        336,
+        208
+      ],
+      "id": "191b8929-eb85-4ef1-92e9-7220a88a06eb",
+      "name": "Postgres Chat Memory1",
+      "credentials": {
+        "postgres": {
+          "id": "75248AnssvaAaGus",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://gnews.io/api/v4/search?",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "=\"{{ $json.output.city }}, {{ $json.output.state }}\""
+            },
+            {
+              "name": "apikey",
+              "value": "fe438965de72a85178d69a7262ca864a"
+            },
+            {
+              "name": "max",
+              "value": "10"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        80
+      ],
+      "id": "ef0565d9-4235-4465-a095-92e993b32abe",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09CCG5UY2W",
+          "mode": "list",
+          "cachedResultName": "ai-agent"
+        },
+        "text": "={{ $json.output }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        528,
+        -112
+      ],
+      "id": "1b4201be-cb68-40ee-a348-7120dc8ad568",
+      "name": "Send a message",
+      "webhookId": "48d56633-1074-4865-84a8-8907715bd7f4",
+      "credentials": {
+        "slackApi": {
+          "id": "KkdgrpxSM5nUaUTc",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "Disaster News Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Disaster News Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Disaster News Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Geolocation": {
+      "ai_tool": [
+        [
+          {
+            "node": "Disaster News Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disaster RSS": {
+      "ai_tool": [
+        [
+          {
+            "node": "Disaster News Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Disaster News Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disaster News Agent": {
+      "main": [
+        [
+          {
+            "node": "Local News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Local News",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Local News",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "Local News",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Local News": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "680920e8-7df9-4881-8ec8-46db787c4417",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3ddf3909c0b13b7afd1d2a30f28dc82e8abc7fab307eed80c5367063c78834f0"
+  },
+  "id": "KTL2EJIAqAS972AI",
+  "tags": []
+}
